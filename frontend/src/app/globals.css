@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --animate-text-gradient: text-gradient 4s ease infinite;
+}
+
+@keyframes text-gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #171717;
+    --surface: #f9fafb;
+    --surface-hover: #f3f4f6;
+    --border: #e5e7eb;
+    
+    --primary: #000000;
+    --primary-foreground: #ffffff;
+    --primary-hover: #1f2937;
+    
+    --muted: #f3f4f6;
+    --muted-foreground: #6b7280;
+    
+    --danger: #ef4444;
+    --danger-foreground: #ffffff;
+    
+    --radius: 0.5rem;
+  }
+
+  /* 
+   * Dark Mode (Sleek Linear/Vercel inspired dark theme)
+   * Deep blacks with very subtle gray variations for surface 
+   */
+  .dark {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --surface: #121212;
+    --surface-hover: #1a1a1a;
+    --border: #262626;
+    
+    --primary: #ffffff;
+    --primary-foreground: #000000;
+    --primary-hover: #e5e5e5;
+    
+    --muted: #171717;
+    --muted-foreground: #a3a3a3;
+    
+    --danger: #dc2626;
+    --danger-foreground: #ffffff;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}

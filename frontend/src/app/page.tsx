@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Box, Code2, Users2, Zap } from "lucide-react";
-import { SparklesBackground } from "@/components/ui/sparkles";
+
 
 export default function LandingPage() {
   return (
@@ -34,7 +34,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <main className="flex-1">
         <section className="relative overflow-hidden px-6 pb-32 pt-40 text-center">
-          <SparklesBackground className="z-0 opacity-40 dark:opacity-80" />
+
           <div className="relative z-10 mx-auto max-w-4xl">
             <h1 className="mb-8 text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-7xl">
               The workspace for <br />

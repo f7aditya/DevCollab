@@ -39,7 +39,7 @@ export const SparklesBackground = ({
         rotation: Math.random() * 360,
       };
     });
-    setSparkles(newSparkles);
+    setSparkles(newSparkles as Sparkle[]);
   }, [sparkleCount]);
 
   useEffect(() => {
@@ -103,6 +103,7 @@ export const SparklesBackground = ({
           key={sparkle.id}
           className="sparkle-wrapper absolute inset-0 transition-transform duration-300 ease-out"
         >
+          {/* @ts-ignore framer-motion React 19 typings bug */}
           <motion.div
             className="absolute flex items-center justify-center text-cyan-400 dark:text-cyan-300"
             style={{

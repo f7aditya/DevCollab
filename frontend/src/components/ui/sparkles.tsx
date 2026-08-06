@@ -35,7 +35,7 @@ export const SparklesBackground = ({
         size: isStar ? baseSize * 3 + 4 : baseSize, // Stars are bigger
         duration: Math.random() * 4 + 4,
         delay: Math.random() * 5,
-        type: isStar ? "star" : "dot",
+        type: (isStar ? "star" : "dot") as "star" | "dot",
         rotation: Math.random() * 360,
       };
     });

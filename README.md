@@ -1,4 +1,4 @@
-# DevCollab
+# DevCollab (DevConnect)
 
 DevCollab is an enterprise-grade, full-stack collaborative workspace platform designed for software engineering teams. It combines project management, real-time communication, task tracking, and community features into a single, cohesive ecosystem.
 
@@ -29,7 +29,25 @@ DevCollab is an enterprise-grade, full-stack collaborative workspace platform de
 *   **Database**: MongoDB (via Mongoose ODM)
 *   **Architecture**: Clean Architecture (Controllers -> Services -> Repositories/Models)
 *   **Security**: Helmet, Express Rate Limit, JWT Authentication, bcryptjs
+*   **Testing**: Jest (Unit & E2E Testing)
 *   **Logging**: Winston + Morgan
+
+## 📂 Project Structure
+
+```text
+DevConnect/
+├── backend/                # Node.js + Express API
+│   ├── src/                # Backend Source Code (Domain Modules)
+│   ├── uploads/            # Local storage for uploaded files/avatars
+│   ├── logs/               # Application log files
+│   ├── jest.config.js      # Testing configuration
+│   └── test-*.js           # E2E and Unit test scripts
+├── frontend/               # Next.js Application
+│   └── src/                # Frontend Source Code (App Router, Features, Components)
+├── docs/                   # Project documentation
+├── .gitignore              # Root gitignore rules
+└── README.md               # You are here!
+```
 
 ## 🚀 Getting Started (Local Development)
 
@@ -41,8 +59,8 @@ DevCollab is designed to be easily runnable on your local machine without comple
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/DevConnect.git
-cd DevConnect
+git clone https://github.com/f7aditya/DevCollab.git
+cd DevCollab
 ```
 
 ### 2. Backend Setup
@@ -52,9 +70,9 @@ cd backend
 npm install
 ```
 
-Create a `.env` file in the `backend` directory:
+Create a `.env` file in the `backend` directory (you can use `.env.example` as a template):
 ```env
-PORT=5000
+PORT=5001
 MONGODB_URI=mongodb://127.0.0.1:27017/devcollab
 JWT_SECRET=super_secret_development_key
 JWT_EXPIRES_IN=30d
@@ -80,7 +98,7 @@ npm install --legacy-peer-deps
 
 Create a `.env.local` file in the `frontend` directory:
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:5001/api/v1
 NEXT_TELEMETRY_DISABLED=1
 ```
 
@@ -95,31 +113,17 @@ If you ran the seed script, you can log in with:
 *   **Email:** `admin@devcollab.com`
 *   **Password:** `password123`
 
+## 🧪 Testing
+The backend includes a comprehensive testing suite. To run the End-to-End (E2E) and API tests located in the `backend` folder:
+```bash
+cd backend
+npx jest
+```
+
 ## 🔐 Security Hardening
 *   **API Rate Limiting**: Enforced via `express-rate-limit` to prevent brute-force attacks.
 *   **HTTP Headers**: `helmet` is active to protect against XSS, clickjacking, and sniffing.
 *   **Payload Sanitization**: Services rigorously strip restricted fields (e.g., `passwordHash`, `status`) before executing `findByIdAndUpdate` database calls.
-
-## 📂 Architecture Organization
-The backend strictly adheres to a domain-driven module structure:
-```
-backend/src/
-├── app.ts                  # Express server instantiation and middleware routing
-├── core/                   # Global utilities (AppError, logger, catchAsync)
-├── middleware/             # AuthGuards, Error Handlers, RBAC
-└── modules/                # Feature domains
-    ├── admin/              # Global metrics and dashboards
-    ├── auth/               # JWT strategy, Registration, Login
-    ├── channels/           # Real-time WebSocket communications
-    ├── files/              # Local storage engine and Base64 parsing
-    ├── jobs/               # Recruitment board
-    ├── notifications/      # Polling/System alerts
-    ├── posts/              # Community discussion feed
-    ├── projects/           # Workspace definition and RBAC logic
-    ├── search/             # Aggregated omni-search engine
-    ├── tasks/              # Kanban issues
-    └── users/              # Identity and Profiles
-```
 
 ---
 *DevCollab is a portfolio demonstration of enterprise full-stack engineering.*

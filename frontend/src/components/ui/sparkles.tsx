@@ -25,7 +25,7 @@ export const SparklesBackground = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const newSparkles = Array.from({ length: sparkleCount }).map((_, i) => {
+    const newSparkles = Array.from({ length: sparkleCount }).map((_, i): Sparkle => {
       const isStar = Math.random() > 0.6; // 40% chance to be a curvy star
       const baseSize = Math.random() * 3 + 1;
       return {

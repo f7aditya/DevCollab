@@ -29,7 +29,7 @@ DevCollab is an enterprise-grade, full-stack collaborative workspace platform de
 *   **Database**: MongoDB (via Mongoose ODM)
 *   **Architecture**: Clean Architecture (Controllers -> Services -> Repositories/Models)
 *   **Security**: Helmet, Express Rate Limit, JWT Authentication, bcryptjs
-*   **Testing**: Jest (Unit & E2E Testing)
+*   **Testing**: Custom Node.js E2E Fetch Scripts (Vanilla JavaScript)
 *   **Logging**: Winston + Morgan
 
 ## 📂 Project Structure
@@ -114,10 +114,12 @@ If you ran the seed script, you can log in with:
 *   **Password:** `password123`
 
 ## 🧪 Testing
-The backend includes a comprehensive testing suite. To run the End-to-End (E2E) and API tests located in the `backend` folder:
+The backend includes custom Javascript End-to-End (E2E) fetch scripts. To run the tests located in the `backend` folder:
 ```bash
 cd backend
-npx jest
+node e2e-test.js
+# Or test specific routes:
+node test-profile.js
 ```
 
 ## 🔐 Security Hardening

@@ -5,6 +5,7 @@ import { InviteMemberInput, UpdateRoleInput } from '../dtos/projectRole.schema';
 import { ProjectRepository } from '../repositories/project.repository';
 import { User } from '../../auth/models/User';
 import mongoose from 'mongoose';
+import { GithubService } from './github.service';
 
 export const ProjectRoleService = {
   async getMembers(projectId: string): Promise<IProjectRole[]> {
@@ -38,7 +39,31 @@ export const ProjectRoleService = {
       throw new AppError('User is already a member of this project', 400);
     }
 
-    return ProjectRoleRepository.create(projectId, targetUserId, data.role);
+    const createdRole = await ProjectRoleRepository.create(projectId, targetUserId, data.role);
+
+    // Auto-invite to GitHub repository if configured
+    try {
+      if (project.links?.github) {
+        const repoDetails = GithubService.parseRepoUrl(project.links.github);
+        if (repoDetails) {
+          const owner = await User.findById(project.ownerId).select('+githubAccessToken');
+          const invitedUser = await User.findById(targetUserId);
+
+          if (owner?.githubAccessToken && invitedUser?.githubUsername) {
+             await GithubService.inviteCollaborator(
+              owner.githubAccessToken,
+              repoDetails.owner,
+              repoDetails.repo,
+              invitedUser.githubUsername
+            );
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to trigger GitHub auto-invite', err);
+    }
+
+    return createdRole;
   },
 
   async updateMemberRole(projectId: string, targetUserId: string, data: UpdateRoleInput, requesterId: string): Promise<IProjectRole> {

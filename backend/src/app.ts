@@ -28,6 +28,7 @@ import { searchRouter } from './modules/search/search.routes';
 import { userRouter } from './modules/users/user.routes';
 import { fileRouter } from './modules/files/file.routes';
 import { adminRouter } from './modules/admin/admin.routes';
+import { githubRouter } from './modules/integrations/github/github.routes';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import { logger } from './core/logger';
@@ -55,7 +56,12 @@ app.use(
 );
 
 // Body parser
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ 
+  limit: '10mb',
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf.toString();
+  }
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static uploads
@@ -75,6 +81,7 @@ app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/files', fileRouter);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/integrations/github', githubRouter);
 
 // Basic health check route
 app.get('/api/health', (req: Request, res: Response) => {

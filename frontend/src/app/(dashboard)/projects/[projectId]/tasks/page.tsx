@@ -14,7 +14,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
-import { Plus, MoreHorizontal, Calendar, GripVertical, AlertCircle, Search } from "lucide-react";
+import { Plus, MoreHorizontal, Calendar, GripVertical, AlertCircle, Search, Github } from "lucide-react";
+import { GithubActivityBadge } from "@/features/github/components/GithubActivityBadge";
+import { useTaskLinks } from "@/features/github/hooks/useGithubActivity";
 
 const COLUMNS: { id: TaskStatus; title: string }[] = [
   { id: "TODO", title: "To Do" },
@@ -47,6 +49,8 @@ export default function KanbanBoardPage({ params }: { params: { projectId: strin
     queryKey: ["tasks", projectId],
     queryFn: () => getTasks(projectId),
   });
+
+  const { data: taskLinks = [] } = useTaskLinks(selectedTask?._id);
 
   const { data: members = [] } = useQuery({
     queryKey: ["projectMembers", projectId],
@@ -374,6 +378,31 @@ export default function KanbanBoardPage({ params }: { params: { projectId: strin
                   </div>
                 </div>
               </div>
+
+              {taskLinks.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                    <Github className="h-4 w-4" /> GitHub Activity
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {taskLinks.map((link: any) => (
+                      <a 
+                        key={link._id} 
+                        href={link.url} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="hover:opacity-80 transition-opacity"
+                      >
+                        <GithubActivityBadge 
+                          type={link.githubType} 
+                          status={link.status} 
+                          number={link.githubNumber} 
+                        />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <DialogFooter className="mt-8 pt-4 border-t border-border flex justify-between sm:justify-between items-center w-full">
               <Button 

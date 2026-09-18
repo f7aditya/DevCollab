@@ -9,6 +9,8 @@ export interface UserProfile {
   bio?: string;
   skills: string[];
   status: string;
+  githubUsername?: string;
+  githubId?: string;
 }
 
 export const getProfile = async (): Promise<UserProfile> => {

@@ -2,45 +2,73 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Github, Linkedin } from "lucide-react";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const login = useAuthStore((state) => state.login);
   
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-  });
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
-  };
+  useEffect(() => {
+    // Check if we just came back from an OAuth redirect
+    const token = searchParams.get("token");
+    const userStr = searchParams.get("user");
+    const err = searchParams.get("error");
+
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userStr));
+        login(token, user);
+        router.push("/dashboard");
+      } catch (e) {
+        console.error("Failed to parse user data from URL");
+      }
+    } else if (err === "oauth_failed") {
+      setError("OAuth registration failed. Please try again or use email.");
+    }
+  }, [searchParams, login, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await api.post("/auth/register", formData);
+      const response = await api.post("/auth/register", { 
+        firstName, 
+        lastName, 
+        email, 
+        password 
+      });
+      
       if (response.success && response.data) {
         login(response.data.token, response.data.user);
         router.push("/dashboard");
       }
     } catch (err: any) {
-      let errorMessage = "Failed to create account. Please try again.";
+      let errorMessage = "Failed to register. Please try again.";
       if (typeof err === "string") {
         errorMessage = err;
       } else if (err?.error?.message) {
@@ -54,100 +82,142 @@ export default function RegisterPage() {
     }
   };
 
-  return (
-    <div
-    >
-      <Card className="border-none shadow-xl shadow-black/5 dark:shadow-white/5">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">D</span>
-            </div>
-          </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Create an account</CardTitle>
-          <CardDescription>Enter your details to get started with DevCollab</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 text-sm text-danger bg-danger/10 rounded-md border border-danger/20">
-                {error}
-              </div>
-            )}
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none" htmlFor="firstName">
-                  First Name
-                </label>
-                <Input
-                  id="firstName"
-                  placeholder="John"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none" htmlFor="lastName">
-                  Last Name
-                </label>
-                <Input
-                  id="lastName"
-                  placeholder="Doe"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api/v1';
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="email">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@company.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="password">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            
-            <Button type="submit" className="w-full mt-2" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Sign Up"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <div className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary font-medium hover:underline">
-              Sign in
-            </Link>
+  return (
+    <Card className="border-none shadow-xl shadow-black/5 dark:shadow-white/5">
+      <CardHeader className="space-y-1 text-center">
+        <div className="flex justify-center mb-4">
+          <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-xl">D</span>
           </div>
-        </CardFooter>
-      </Card>
-    </div>
+        </div>
+        <CardTitle className="text-2xl font-bold tracking-tight">Create an account</CardTitle>
+        <CardDescription>Enter your details below to get started</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <div className="p-3 mb-4 text-sm text-danger bg-danger/10 rounded-md border border-danger/20">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-2 mb-4">
+          <Button variant="outline" type="button" onClick={() => window.location.href = `${API_URL}/auth/oauth/google`} className="w-full">
+            <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
+            Google
+          </Button>
+          <Button variant="outline" type="button" onClick={() => window.location.href = `${API_URL}/auth/oauth/github`} className="w-full">
+            <Github className="mr-2 h-4 w-4" />
+            GitHub
+          </Button>
+          <Button variant="outline" type="button" onClick={() => window.location.href = `${API_URL}/auth/oauth/linkedin`} className="w-full">
+            <Linkedin className="mr-2 h-4 w-4" />
+            LinkedIn
+          </Button>
+        </div>
+
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none" htmlFor="firstName">
+                First Name
+              </label>
+              <Input
+                id="firstName"
+                placeholder="John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none" htmlFor="lastName">
+                Last Name
+              </label>
+              <Input
+                id="lastName"
+                placeholder="Doe"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none" htmlFor="email">
+              Email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="name@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none" htmlFor="password">
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none" htmlFor="confirmPassword">
+              Confirm Password
+            </label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <Button type="submit" className="w-full mt-2" disabled={isLoading}>
+            {isLoading ? "Creating account..." : "Sign Up with Email"}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="flex justify-center">
+        <div className="text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login" className="text-primary font-medium hover:underline">
+            Sign in
+          </Link>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

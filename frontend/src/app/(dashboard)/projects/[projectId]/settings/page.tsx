@@ -16,7 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { LogOut, ArrowRightLeft } from "lucide-react";
+import { LogOut, ArrowRightLeft, Github } from "lucide-react";
+import { RepoPickerModal } from "@/features/github/components/RepoPickerModal";
+import { useProjectGithubActivity } from "@/features/github/hooks/useGithubActivity";
 
 export default function ProjectSettingsPage({ params }: { params: { projectId: string } }) {
   const { projectId } = React.use(params) as any;
@@ -30,6 +32,7 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [newOwnerId, setNewOwnerId] = useState("");
+  const [isRepoPickerOpen, setIsRepoPickerOpen] = useState(false);
 
   const { data: project, isLoading } = useQuery({
     queryKey: ["project", projectId],
@@ -137,6 +140,27 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
             </Button>
           </CardFooter>
         </form>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>GitHub Integration</CardTitle>
+          <CardDescription>Link a GitHub repository to automatically sync PRs and issues.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-surface">
+            <div className="flex items-center gap-3">
+              <Github className="h-6 w-6" />
+              <div>
+                <h4 className="font-medium">Repository Sync</h4>
+                <p className="text-sm text-muted-foreground">Manage your connected repository</p>
+              </div>
+            </div>
+            <Button onClick={() => setIsRepoPickerOpen(true)} disabled={!isOwner && currentUserRole !== "ADMIN"}>
+              Link Repository
+            </Button>
+          </div>
+        </CardContent>
       </Card>
 
       {!isOwner && isMember && (
@@ -253,6 +277,14 @@ export default function ProjectSettingsPage({ params }: { params: { projectId: s
         </DialogFooter>
         <DialogClose onClick={() => setIsDeleteOpen(false)} />
       </Dialog>
+
+      {isRepoPickerOpen && (
+        <RepoPickerModal
+          projectId={projectId}
+          onClose={() => setIsRepoPickerOpen(false)}
+          onSuccess={() => setIsRepoPickerOpen(false)}
+        />
+      )}
     </div>
   );
 }

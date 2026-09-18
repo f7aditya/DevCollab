@@ -16,34 +16,6 @@ export const OAuthService = {
     return `https://github.com/login/oauth/authorize?${params.toString()}`;
   },
 
-  async getGoogleAuthUrl(redirectUri: string) {
-    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-    if (!GOOGLE_CLIENT_ID) throw new AppError('Google OAuth is not configured on the server', 500);
-
-    const params = new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: redirectUri,
-      scope: 'openid email profile',
-      response_type: 'code',
-      access_type: 'offline',
-      prompt: 'consent'
-    });
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-  },
-
-  async getLinkedinAuthUrl(redirectUri: string) {
-    const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
-    if (!LINKEDIN_CLIENT_ID) throw new AppError('LinkedIn OAuth is not configured on the server', 500);
-
-    const params = new URLSearchParams({
-      client_id: LINKEDIN_CLIENT_ID,
-      redirect_uri: redirectUri,
-      scope: 'openid profile email', // using new Sign In with LinkedIn v2 scopes
-      response_type: 'code',
-    });
-    return `https://www.linkedin.com/oauth/v2/authorization?${params.toString()}`;
-  },
-
   async exchangeGithubCode(code: string, redirectUri: string) {
     const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
     const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
@@ -71,62 +43,6 @@ export const OAuthService = {
       throw new AppError(`GitHub OAuth error: ${data.error_description}`, 400);
     }
 
-    return data.access_token as string;
-  },
-
-  async exchangeGoogleCode(code: string, redirectUri: string) {
-    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-    const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-      throw new AppError('Google OAuth is not configured', 500);
-    }
-
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        code,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code'
-      }),
-    });
-
-    const data = await response.json();
-    if (data.error) {
-      throw new AppError(`Google OAuth error: ${data.error_description}`, 400);
-    }
-    return data.access_token as string;
-  },
-
-  async exchangeLinkedinCode(code: string, redirectUri: string) {
-    const LINKEDIN_CLIENT_ID = process.env.LINKEDIN_CLIENT_ID;
-    const LINKEDIN_CLIENT_SECRET = process.env.LINKEDIN_CLIENT_SECRET;
-    
-    if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
-      throw new AppError('LinkedIn OAuth is not configured', 500);
-    }
-
-    const params = new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: redirectUri,
-      client_id: LINKEDIN_CLIENT_ID,
-      client_secret: LINKEDIN_CLIENT_SECRET
-    });
-
-    const response = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString()
-    });
-
-    const data = await response.json();
-    if (data.error) {
-      throw new AppError(`LinkedIn OAuth error: ${data.error_description}`, 400);
-    }
     return data.access_token as string;
   },
 
@@ -162,47 +78,13 @@ export const OAuthService = {
     };
   },
 
-  async getGoogleProfile(accessToken: string) {
-    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!response.ok) throw new AppError('Failed to fetch Google profile', response.status);
-    const data = await response.json();
-
-    return {
-      providerId: String(data.id),
-      email: data.email,
-      firstName: data.given_name || data.name,
-      lastName: data.family_name || '',
-      avatarUrl: data.picture,
-      provider: 'google' as const
-    };
-  },
-
-  async getLinkedinProfile(accessToken: string) {
-    const response = await fetch('https://api.linkedin.com/v2/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!response.ok) throw new AppError('Failed to fetch LinkedIn profile', response.status);
-    const data = await response.json();
-
-    return {
-      providerId: String(data.sub),
-      email: data.email,
-      firstName: data.given_name,
-      lastName: data.family_name,
-      avatarUrl: data.picture,
-      provider: 'linkedin' as const
-    };
-  },
-
   async loginOrRegister(profile: {
     providerId: string;
     email: string;
     firstName: string;
     lastName: string;
     avatarUrl?: string;
-    provider: 'github' | 'google' | 'linkedin';
+    provider: 'github';
     githubUsername?: string;
   }) {
     let user = await User.findOne({ 

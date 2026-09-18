@@ -13,8 +13,8 @@ export interface IUser extends Document {
   githubId?: string;
   githubUsername?: string;
   githubAccessToken?: string;
-  googleId?: string;
-  linkedinId?: string;
+
+
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -33,8 +33,8 @@ const userSchema = new Schema<IUser>(
     githubId: { type: String, unique: true, sparse: true },
     githubUsername: { type: String },
     githubAccessToken: { type: String, select: false },
-    googleId: { type: String, unique: true, sparse: true },
-    linkedinId: { type: String, unique: true, sparse: true },
+
+
   },
   { timestamps: true }
 );

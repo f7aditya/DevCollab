@@ -10,14 +10,8 @@ const router = Router();
 router.post('/register', validateRequest(registerSchema), AuthController.register);
 router.post('/login', validateRequest(loginSchema), AuthController.login);
 
-// Global OAuth Auth
-router.get('/oauth/google', OAuthController.getGoogleAuthUrl);
-router.get('/oauth/google/callback', OAuthController.googleCallback);
-
 router.get('/oauth/github', OAuthController.getGithubAuthUrl);
 router.get('/oauth/github/callback', OAuthController.githubCallback);
 
-router.get('/oauth/linkedin', OAuthController.getLinkedinAuthUrl);
-router.get('/oauth/linkedin/callback', OAuthController.linkedinCallback);
 
 export { router as authRouter };
